@@ -1,52 +1,53 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def iter(y, h, x, n, k, f):
+
+#----------------простые итерации---------------------
+def iter(y, h, x, x_len, kernel, right_part):
     yk = y.copy()
-    for i in range(n):
+    for i in range(x_len):
         yk[i] = 0
         for j in range(i):
-            yk[i] = yk[i] + 2*k(x[i], x[j])*y[j]
-        yk[i] = yk[i] - k(x[i], x[0])*y[0] - k(x[i], x[i])*y[i]
-        yk[i] = f(x[i]) + yk[i]*h/2
+            yk[i] = yk[i] + 2*kernel(x[i], x[j])*y[j]
+        yk[i] = yk[i] - kernel(x[i], x[0])*y[0] - kernel(x[i], x[i])*y[i]
+        yk[i] = right_part(x[i]) + yk[i]*h/2
     return yk
 
 
-def solve_iter(k, f, x, h, eps =1e-1):
+def solve_iter(kernel, right_part, x, h, eps = 1e-1):
     n = len(x)
-    y = f(x)
-    yk = iter(y, h, x, n, k, f)
+    y = right_part(x)
+    yk = iter(y, h, x, n, kernel, right_part)
     i = 0
     err = lambda y,yk: np.linalg.norm(y - yk)/np.linalg.norm(y)
     error = err(y,yk)
-    #print(max(y-yk))
     while error > eps:
-        #print(error(y, yk))
         y = yk.copy()
-        yk = iter(y.copy(), h, x, n, k, f)
-        #print(error(y, yk))
+        yk = iter(y.copy(), h, x, n, kernel, right_part)
         error = err(y, yk)
         i += 1
         if i > 1000: break
     return yk, i
 
-a = 0
-b = 1
-h = 1e-2
-l = 1
-beta = -1
+#-----------------квадратурный способ----------------
 
-N = int((b-a)/h)
+def quad_solve(kernel, right_part, h, x_ax, iterations, analytical):
+    solution = right_part(x_ax)
+    error = np.zeros(iterations + 1)
+    error[0] = np.abs(np.linalg.norm(solution - analytical(x_ax)) /np.linalg.norm(analytical(x_ax)))
+    for j in range(iterations):
+        for i in range(1, len(x_ax)):
+            solution[i] = (right_part(x_ax[i]) + h / 2 * kernel(x_ax[i], x_ax[0]) * solution[0] + h * np.dot(kernel(x_ax[i],x_ax[1:i-1]), solution[1:i-1])) / (1 - h/2 * kernel(x_ax[i],x_ax[i]))
+        error[j + 1] = np.abs(np.mean(solution - analytical(x_ax)))
+    return solution, error
 
-k_func = lambda x, t: np.exp(l*(x-t))
-f_func = lambda t: np.exp(beta*t)
 
-x = np.linspace(a, b, N)
-x_ex = [2*np.exp(x[i])-1 for i in range(N)]
-res, i = solve_iter(k_func, f_func, x, h, eps=1e-10)
 
-analytical = 2 * np.exp(x)
+# res, i = solve_iter(kernel, right_part, x, h, eps=1e-10)
 
-plt.plot(x, analytical)
-plt.plot(x, res)
-plt.show()
+
+# quad_solution, _ = quad_solve(kernel, right_part, h, x, 10, analytical)
+
+# plt.plot(x, analytical(x))
+# plt.plot(x, quad_solution)
+# plt.show()
