@@ -1,6 +1,6 @@
 import numpy as np
 
-def quad_fr(k_func, f_func, a, b, h):
+def quad_fr(k_func, f_func, a, b, h, noise = None):
     x = np.linspace(a, b, int((b-a)/h))
     n = len(x)
     wt = 0.5
@@ -14,7 +14,7 @@ def quad_fr(k_func, f_func, a, b, h):
         a[i,i] += 1.
         b = np.zeros_like(x)
         for j in range(n):
-            b[j] = f_func(x[j])
+            b[j] = f_func(x[j]) + noise[j]
     y = np.linalg.solve(a, b)
     return y
 
