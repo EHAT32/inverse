@@ -63,7 +63,7 @@ kernel_ar = torch.from_numpy(kernel_ar)
 kernel_fft = torch.from_numpy(kernel_fft)
 m_ar = torch.from_numpy(m_ar)
 
-epoch_num = 500
+epoch_num = 1000
 alpha_opt = np.zeros(epoch_num)
 
 for j in range(epoch_num):
@@ -73,8 +73,8 @@ for j in range(epoch_num):
     noise = np.random.normal(0, sig, len(f_t))
     f_d = f_t + noise
     F_d = torch.from_numpy(np.fft.fft(f_d))
-    sigma = torch.tensor(sig, dtype=torch.float32)
-    for i in range(100):
+    sigma = torch.tensor(sig * 0.8, dtype=torch.float32)
+    for i in range(50):
         loss = loss_2(kernel_ar, kernel_fft, F_d, m_ar, alpha, sigma)
         optimizer.zero_grad()
         loss.backward()
@@ -82,4 +82,4 @@ for j in range(epoch_num):
     if j % 100 == 0:
         print(f'{j + 1} : {loss}')
     alpha_opt[j] = alpha.detach().numpy()
-np.save('D:/python/inverse/30_9/sec_meth_7_e_2_n.npy', alpha_opt)
+np.save('D:/python/inverse/30_9/sec_meth_7_e_2_low.npy', alpha_opt)
