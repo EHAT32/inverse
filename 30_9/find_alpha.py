@@ -1,16 +1,15 @@
 import numpy as np
 import torch
 
-def fourier_solve(kernel_fft : torch.Tensor, right_fft : torch.Tensor, m_omega : torch.Tensor, alpha : torch.Tensor) -> torch.Tensor:
+def fourier_solve(kernel_fft, right_fft, m_omega, alpha):
     sol_fft = (right_fft * kernel_fft.conj()) / (kernel_fft.conj() * kernel_fft + alpha * m_omega)
-    return torch.fft.ifft(sol_fft).real
+    return np.fft.ifft(sol_fft).real
 
-def conv(kernel, func, t_ax):
-    result = np.zeros(len(t_ax))
-    K = kernel(t_ax)
-    F = func(t_ax)[::-1]
-    for i in range(len(t_ax)):
-        result[i] = np.sum(K * np.roll(F, i + 1))
+def conv(kernel, func):
+    result = np.zeros(len(func))
+    F = np.flip(func, 0)
+    for i in range(len(func)):
+        result[i] = np.sum(kernel * np.roll(F, i + 1))
     return result
 
 def torch_conv(kernel : torch.Tensor, func : torch.Tensor) -> torch.Tensor:
