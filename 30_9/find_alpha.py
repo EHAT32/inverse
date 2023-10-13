@@ -3,7 +3,7 @@ import torch
 
 def fourier_solve(kernel_fft, right_fft, m_omega, alpha):
     sol_fft = (right_fft * kernel_fft.conj()) / (kernel_fft.conj() * kernel_fft + alpha * m_omega)
-    return torch.fft.ifft(sol_fft).real
+    return np.fft.ifft(sol_fft).real
 
 def conv(kernel, func):
     result = np.zeros(len(func))
