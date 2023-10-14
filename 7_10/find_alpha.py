@@ -13,6 +13,13 @@ def conv(kernel, func):
         result[i] = np.sum(kernel * np.roll(F, i + 1))
     return result
 
+def conv_2(kernel, func):
+    result = np.zeros(len(func))
+    K = np.flip(kernel, 0)
+    for i in range(len(func)):
+        result[i] = np.sum(func * np.roll(K, i + 1))
+    return result
+
 def torch_conv(kernel : torch.Tensor, func : torch.Tensor) -> torch.Tensor:
     result = torch.zeros(len(kernel))
     F = torch.flip(func, (0,))
