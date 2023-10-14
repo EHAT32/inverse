@@ -54,36 +54,36 @@ freq_ax = np.fft.fftfreq(len(t_ax), t_ax[1] - t_ax[0])
 m_ar = m_omega(freq_ax)
 
 
-# kernel_ar = torch.from_numpy(kernel_ar)
-# kernel_fft = torch.from_numpy(kernel_fft)
-# m_ar = torch.from_numpy(m_ar)
-# target = torch.from_numpy(x_ar)
+kernel_ar = torch.from_numpy(kernel_ar)
+kernel_fft = torch.from_numpy(kernel_fft)
+m_ar = torch.from_numpy(m_ar)
+target = torch.from_numpy(x_ar)
 
 epoch_num = 100
 alpha_opt = np.zeros(epoch_num)
 
 sigma = 1e-1
 
-alpha_range = np.linspace(1e-15, 1e-13, 100)
-for i in range(epoch_num):
-    noise = np.random.normal(0, sigma)
-    sol = np.zeros(epoch_num)
-    right_noisy = f_t + noise
-    right_fft = np.fft.fft(right_noisy)
-    for j in range(100):
-        solut = fourier_solve(kernel_fft, right_fft, m_ar, alpha_range[j])
-        sol[j] = np.linalg.norm(conv(kernel_ar, solut) - right_noisy)-sigma
-    alpha_opt[i] = alpha_range[np.argmin(sol)]
-    if i % 50 == 0:
-        print(i, ' ', alpha_opt[i])
+# alpha_range = np.linspace(1e-15, 1e-13, 100)
+# for i in range(epoch_num):
+#     noise = np.random.normal(0, sigma)
+#     sol = np.zeros(epoch_num)
+#     right_noisy = f_t + noise
+#     right_fft = np.fft.fft(right_noisy)
+#     for j in range(100):
+#         solut = fourier_solve(kernel_fft, right_fft, m_ar, alpha_range[j])
+#         sol[j] = np.linalg.norm(conv(kernel_ar, solut) - right_noisy)-sigma
+#     alpha_opt[i] = alpha_range[np.argmin(sol)]
+#     if i % 50 == 0:
+#         print(i, ' ', alpha_opt[i])
 
-# alpha = torch.tensor(1e-9, dtype=torch.float32, requires_grad=True)
+# alpha = torch.tensor(1e-8, dtype=torch.float32, requires_grad=True)
 # for j in range(epoch_num):
-#     optimizer = torch.optim.Adam([alpha], lr=1e-12, weight_decay=0.8)
+#     optimizer = torch.optim.Adam([alpha], lr=1e-11, weight_decay=0.8)
 #     noise = np.random.normal(0, sigma, len(f_t))
 #     f_d = f_t + noise
 #     F_d = torch.from_numpy(np.fft.fft(f_d))
-#     sigma = torch.tensor(sigma * 0.9, dtype=torch.float32)
+#     sigma = torch.tensor(sigma * 0.95, dtype=torch.float32)
 #     for i in range(50):
 #         loss = loss_2(kernel_ar, kernel_fft, F_d, m_ar, alpha, sigma)
 #         # loss = loss_func(kernel_fft, F_d, m_ar, alpha, target)
@@ -95,7 +95,8 @@ for i in range(epoch_num):
 #     if j % 10 == 0:
 #         print(f'{j + 1} : {alpha.item()}')
 #     alpha_opt[j] = alpha.detach().numpy()
-# np.save('C:/python/inverse/30_9/naive_sec_meth_7_2_low_n.npy', alpha_opt)
-print(alpha_opt)
-plt.hist(alpha_opt)
-plt.show()
+# np.save('C:/python/inverse/30_9/sec_met_1_1_low_n_back.npy', alpha_opt)
+# print(alpha_opt)
+
+# plt.hist(alpha_opt)
+# plt.show()
