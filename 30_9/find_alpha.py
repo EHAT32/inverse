@@ -3,8 +3,8 @@ import torch
 import matplotlib.pyplot as plt
 
 def fourier_solve(kernel_fft, right_fft, m_omega, alpha):
-    sol_fft = (right_fft * kernel_fft.conj()) / (kernel_fft.conj() * kernel_fft + alpha * m_omega)
-    return torch.fft.ifft(sol_fft).real
+    sol_fft = (right_fft * kernel_fft.conj()) / (kernel_fft.conj() * kernel_fft + np.abs(alpha) * m_omega)
+    return np.fft.ifft(sol_fft).real
 
 def conv(kernel, func):
     result = np.zeros(len(func))
@@ -45,8 +45,7 @@ dt = 2e-3
 kernel = lambda t, beta : np.exp(- beta * t) + A * np.exp(- beta * t - dt)
 kernel_ar = kernel(t_ax, beta_0 * 1)
 f_t = conv(kernel_ar, x_ar)
-sigma = 1e-1
-noise = np.random.normal(0, sigma)
+
 
 # #Фурье от правой части:
 kernel_fft = np.fft.fft(kernel_ar)
@@ -55,31 +54,48 @@ freq_ax = np.fft.fftfreq(len(t_ax), t_ax[1] - t_ax[0])
 m_ar = m_omega(freq_ax)
 
 
-kernel_ar = torch.from_numpy(kernel_ar)
-kernel_fft = torch.from_numpy(kernel_fft)
-m_ar = torch.from_numpy(m_ar)
-target = torch.from_numpy(x_ar)
+# kernel_ar = torch.from_numpy(kernel_ar)
+# kernel_fft = torch.from_numpy(kernel_fft)
+# m_ar = torch.from_numpy(m_ar)
+# target = torch.from_numpy(x_ar)
 
-epoch_num = 1000
+epoch_num = 100
 alpha_opt = np.zeros(epoch_num)
 
-for j in range(epoch_num):
-    alpha = torch.tensor(1e-13, dtype=torch.float32, requires_grad=True)
-    optimizer = torch.optim.Adam([alpha], lr=1e-14, weight_decay=0.9)
-    noise = np.random.normal(0, sigma, len(f_t))
-    f_d = f_t + noise
-    F_d = torch.from_numpy(np.fft.fft(f_d))
-    # sigma = torch.tensor(sigma, dtype=torch.float32)
-    for i in range(100):
-        # loss = loss_2(kernel_ar, kernel_fft, F_d, m_ar, alpha, sigma)
-        loss = loss_func(kernel_fft, F_d, m_ar, alpha, target)
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-    if j % 100 == 0:
-        print(f'{j + 1} : {loss}')
-    alpha_opt[j] = alpha.detach().numpy()
-np.save('D:/python/inverse/7_10/beta_1.npy', alpha_opt)
+sigma = 1e-1
 
+alpha_range = np.linspace(1e-15, 1e-13, 100)
+for i in range(epoch_num):
+    noise = np.random.normal(0, sigma)
+    sol = np.zeros(epoch_num)
+    right_noisy = f_t + noise
+    right_fft = np.fft.fft(right_noisy)
+    for j in range(100):
+        solut = fourier_solve(kernel_fft, right_fft, m_ar, alpha_range[j])
+        sol[j] = np.linalg.norm(conv(kernel_ar, solut) - right_noisy)-sigma
+    alpha_opt[i] = alpha_range[np.argmin(sol)]
+    if i % 50 == 0:
+        print(i, ' ', alpha_opt[i])
+
+# alpha = torch.tensor(1e-9, dtype=torch.float32, requires_grad=True)
+# for j in range(epoch_num):
+#     optimizer = torch.optim.Adam([alpha], lr=1e-12, weight_decay=0.8)
+#     noise = np.random.normal(0, sigma, len(f_t))
+#     f_d = f_t + noise
+#     F_d = torch.from_numpy(np.fft.fft(f_d))
+#     sigma = torch.tensor(sigma * 0.9, dtype=torch.float32)
+#     for i in range(50):
+#         loss = loss_2(kernel_ar, kernel_fft, F_d, m_ar, alpha, sigma)
+#         # loss = loss_func(kernel_fft, F_d, m_ar, alpha, target)
+#         optimizer.zero_grad()
+#         loss.backward()
+#         optimizer.step()
+#         # if alpha.item() < 1e-15:
+#         #     alpha = - alpha
+#     if j % 10 == 0:
+#         print(f'{j + 1} : {alpha.item()}')
+#     alpha_opt[j] = alpha.detach().numpy()
+# np.save('C:/python/inverse/30_9/naive_sec_meth_7_2_low_n.npy', alpha_opt)
+print(alpha_opt)
 plt.hist(alpha_opt)
 plt.show()
