@@ -53,8 +53,9 @@ def exp(x_ar, alpha, right_noisy, MAX_ITER = 100):
     res_norm = np.linalg.norm(iter_solution)
     eps = 1e-5
     true_residual = np.zeros(MAX_ITER)
+    true_residual[0] = res_norm
     i = 0
-    while i < MAX_ITER and res_norm > eps:
+    while i < MAX_ITER and res_norm <= true_residual[0]:
         iter_solution += alpha * (right_noisy - np.dot(kernel_matr, iter_solution))
         true_residual[i] = (np.linalg.norm(x_ar - iter_solution) / np.linalg.norm(x_ar))**2
         res_norm = np.sqrt(true_residual[i])
@@ -62,12 +63,12 @@ def exp(x_ar, alpha, right_noisy, MAX_ITER = 100):
     iter_solution = 0
     return true_residual, i
 
-alpha_range = [0.01, 0.01, 0.01]
-
-for alpha in alpha_range:
-    func, i = exp(x_ar, alpha, right_noisy)
-    t = func.copy()
-    plt.plot(np.arange(1, i +1), t[:i], label = f'alpha = {alpha}')
-    np.delete(func, np.arange(len(func)))
+alpha = 0.05
+nam = str(alpha)
+nam =  nam.replace('.', '_')
+func, i = exp(x_ar, alpha, right_noisy)
+func = func[:i]
+plt.plot(np.arange(1, i +1), func[:i], label = f'alpha = {alpha}')
+np.save('./14_10/'+nam+'.npy', func)
 plt.legend()
 plt.show()
