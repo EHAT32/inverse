@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy
+from scipy.signal import argrelextrema
 
 def conv(kernel, func):
     result = np.zeros(len(func))
@@ -54,16 +55,17 @@ def exp(x_ar, alpha, right_noisy, MAX_ITER = 100):
     eps = 1e-5
     true_residual = np.zeros(MAX_ITER)
     true_residual[0] = res_norm
-    i = 0
-    while i < MAX_ITER and res_norm <= true_residual[0]:
+    i = 1
+    while i < MAX_ITER and true_residual[i] < true_residual[0]:
         iter_solution += alpha * (right_noisy - np.dot(kernel_matr, iter_solution))
         true_residual[i] = (np.linalg.norm(x_ar - iter_solution) / np.linalg.norm(x_ar))**2
         res_norm = np.sqrt(true_residual[i])
         i += 1
     iter_solution = 0
+    print(true_residual[0], ' ', true_residual[81])
     return true_residual, i
 
-alpha = 0.05
+alpha = 0.03
 nam = str(alpha)
 nam =  nam.replace('.', '_')
 func, i = exp(x_ar, alpha, right_noisy)
