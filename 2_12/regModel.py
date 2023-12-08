@@ -1,6 +1,6 @@
 import numpy as np
 
-class HWRegression():
+class Regression():
 
     def __init__(self, learning_rate: float = 1e-2, max_iter: int = 100, early_stop_eps: float = 1e-2):
 
@@ -56,7 +56,7 @@ class HWRegression():
         self.loss.append(np.sum((self.target - Y_pred)**2))
         self.iter += 1
 
-        return self
+        # return self
 
     def predict(self, X):
         xy = np.empty_like(self.target)
