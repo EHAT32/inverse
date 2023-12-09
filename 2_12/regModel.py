@@ -11,29 +11,21 @@ class Regression():
         self.loss = []
         self.cur_loss = np.inf
 
-    def fit(self, data: np.ndarray, target: np.ndarray):
-        """fit with MSE loss
+    def fit(self, trainData: np.ndarray, target: np.ndarray):
 
-        Args:
-            data (np.ndarray): data samples (phi)
-            target (np.ndarray): xy coordinates
-
-        Returns:
-            CircleRegression: fitted regressor
-        """
-
-        self.data = data
+        self.data = trainData
         self.target = target
 
-        self.m, self.n = data.shape
+        self.m, self.n = trainData.shape
 
         self.R = 0
         self.C = np.zeros((self.n,))
 
-        self.xy = np.empty_like(target)
-        self.xy[:, 0] = np.cos(data).flatten()
-        self.xy[:, 1] = np.sin(data).flatten()
-
+        self.output = np.empty_like(target)
+        self.output[:, 0] = np.cos(trainData).flatten()
+        self.output[:, 1] = np.sin(trainData).flatten()
+        
+        #fitting itself
         for _ in range(self.max_iter):
             self.update_weights()
             if abs(self.cur_loss - self.loss[-1]) < self.early_stop_eps:
@@ -41,13 +33,11 @@ class Regression():
             self.cur_loss = self.loss[-1]
         self.cur_loss = self.loss[-1]
 
-        return self
-
     def update_weights(self):
 
         Y_pred = self.predict(self.data)
 
-        dW = -(2 * np.sum((self.xy.T).dot(self.target - Y_pred)) / self.m)
+        dW = -(2 * np.sum((self.output.T).dot(self.target - Y_pred)) / self.m)
         db = -2 * np.sum(self.target - Y_pred, axis=0) / self.m
 
         self.R = self.R - self.learning_rate * dW
@@ -56,11 +46,9 @@ class Regression():
         self.loss.append(np.sum((self.target - Y_pred)**2))
         self.iter += 1
 
-        # return self
-
     def predict(self, X):
-        xy = np.empty_like(self.target)
-        xy[:, 0] = np.sin(X.flatten())
-        xy[:, 1] = np.cos(X.flatten())
+        output = np.empty_like(self.target)
+        output[:, 0] = np.sin(X.flatten())
+        output[:, 1] = np.cos(X.flatten())
 
-        return self.R*self.xy + self.C
+        return self.R*self.output + self.C
